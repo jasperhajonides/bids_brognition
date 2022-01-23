@@ -71,8 +71,8 @@ Note that if all of this fails, you can try installing mne via another pathway (
 
 ## Formatting files according to BIDS.
 
-Open the file `BIDS_MEEG_BEH.py` in this repository.
-Now that that is out of the way, the fun can begin. This should be relatively straightforward:
+This is a good moment to download the BIDS_scripts folder in this repository, if you haven't already. Below, I'll go through some of the functions below but if you're bold you can just run the lines in that script and ignore the below.
+
 
 0.	Load packages:
 
@@ -92,15 +92,120 @@ from write_manual_bids import *
 rootdir = './new_project'
 ```
 
-Now we can do the data formatting for behavioural data, MEG data, and EEG data. For MRI data you can use a tool called BIDScoin. This is not easy to integrate so I would encourage to read their _very elaborate_ documentation: https://bidscoin.readthedocs.io/en/stable/#
+Now we can do the data formatting for *behavioural data, MEG data, and EEG data*. For MRI data you can use a tool called BIDScoin. This is not easy to integrate so I would encourage to read their _very elaborate_ documentation: https://bidscoin.readthedocs.io/en/stable/#
 
 ## Behavioural
 Depending on your task structure you might want to add or remove folders for runs, sessions, or acquisitions. In the example below we only have 1 acquisition and no sessions or runs. 
 
+```python
+
+bids_path = BIDSPath(subject='02', task='featobj',
+                             acquisition='01', datatype='beh',
+                             root=rootdir) #session='01', run='01'
+
+raw_fname = 'path/yourdata.csv'
+write_raw_bids_beh(raw_fname, bids_path,
+                   overwrite=True, verbose=True)
+```
+
+You should first type `edit beh_json_details` and add all the variables in your .csv file, with a short description for the future dataset user.
+This will help generate a .json file with the information about all variables.
+
+```python
+
+# Add behavioural variable info --- Editting JSON file
+# load in the script “beh_json_details” and add all the variables of your task. 
+filename = op.join(bids_path.directory,bids_path.basename+'_beh.json')
+beh_json_details(filename)
+```
+
+Repeat for all sessions, runs, subjects with or without loops.
 
 
+## MEG 
+
+MEG data is relatively straightforward. You receive a .fif file from the acquisition computer and use this file for the code below.
+These fif files also contain a bunch of metadata already. Nice. 
+
+```python
+
+# read in .fif
+raw = mne.io.read_raw_fif('path/your_meg_data.fif', verbose=False)
+raw.info['line_freq'] = 50  # Specify power line frequency as required by BIDS. probably correct already but just checking. 
+
+# # generate path
+bids_path = BIDSPath(subject='02', task='featobj',
+                             acquisition='01', datatype='meg',
+                             root=rootdir) #session='01', run='01'
+
+write_raw_bids(raw, 
+               bids_path=bids_path, 
+               overwrite=True, 
+               allow_preload=False)
+```
+
+## EEG
+
+EEG data requires a little bit more work than MEG data. Partly because the code takes in .fif files. Futhermore, barely any meta data about the subject or setup is stored in the datafile :( 
+
+I don't know much about converting files to .fif but below is one impratical way to do it. (Maybe you need to use EEGLAB to convert your data to .set first)
+
+```python
+#Read .data
+raw = mne.io.read_raw_eeglab('path/eeg_data.set')
+#Write .fif
+raw.save('path/eeg_data.fif')
+```
+
+Next we do the same as we have been doing for the other file formats
+
+```python
+raw = mne.io.read_raw_fif('/Users/jasperhvdm/Documents/DPhil/BIDS/sourcedata/test_epo_04.fif', verbose=False)
+raw.info['line_freq'] = 50  # Specify power line frequency as required by BIDS.
+
+# add events
+events_from_annot, event_dict = mne.events_from_annotations(raw)
+
+bids_path = BIDSPath(subject='02', task='featobj',
+                             acquisition='01', datatype='eeg',
+                             root=rootdir) # acquisition='01', session='01', run='01'
+
+write_raw_bids(raw, bids_path=bids_path, 
+               overwrite=True, 
+               allow_preload=False,
+               event_id=event_dict,
+               events_data=events_from_annot)
+```
+We also like to add EEG setup data so type `edit EEG_json_details` to edit the details of your setup.
+Subsequently, run this:
+
+```python
+# Add EEG info --- Editting JSON file
+filename = op.join(bids_path.directory,bids_path.basename+'_eeg.json')
+# edit this for your own experiment
+EEG_json_details(filename)
+```
+
+## Write general dataset metadata to go with your main folder
+
+mne_bids also allows you to add metadata through a function. Add your own details.
 
 
+```python
+make_dataset_description(rootdir, 'dataset_description', 
+                         data_license='Creative Commons Attribution 4.0 International License.',
+                         authors=['Jasper E. Hajonides van der Meulen','Freek van Ede',
+                                  'Mark G. Stokes','Anna C. Nobre'], 
+                         acknowledgements=None, 
+                         how_to_acknowledge='Hajonides, J. E., van Ede, F., Stokes, M. G., & Nobre, A. C. (2020). Comparing the prioritization of items and feature-dimensions in visual working memory. Journal of vision, 20(8), 25-25.',
+                         funding=['ACCESS2WM','220020405','ES/S015477/1','MR/J009024/1',
+                                  'BB/M010732/1','220020448','104571/Z/14/Z','203139/Z/16/Z'], 
+                         references_and_links=None, 
+                         doi=None, 
+                         dataset_type='raw', 
+                         overwrite=True, 
+                         verbose=True)
+```
 
 
 
