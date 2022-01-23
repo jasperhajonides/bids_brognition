@@ -4,7 +4,8 @@ Neuroimaging experiments result in complicated data that can be arranged in many
 
 
 BIDS uses the following file tree:
-![alt text](https://github.com/jasperhajonides/bids_brogniion/ims/main/bids_tree.png?raw=true)
+
+![alt text](https://github.com/jasperhajonides/bids_brognition/ims/main/bids_tree.png?raw=true)
 
  
 Where “source” contains the raw data straight from the acquisition computer. This is saved because in cases the file format of the raw data is converted into a more commonly used format.  
