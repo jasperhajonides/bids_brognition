@@ -207,7 +207,11 @@ make_dataset_description(rootdir, 'dataset_description',
                          verbose=True)
 ```
 
+## BIDS validator
+Finally, you can check if the file system is organised in accordance with BIDS guidelines through a BIDS validator.
+http://bids-standard.github.io/bids-validator/
 
+You can add branches you like to ignore to a .gitignore file. 
 
 
 
