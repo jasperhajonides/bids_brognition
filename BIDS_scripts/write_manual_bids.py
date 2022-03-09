@@ -282,12 +282,12 @@ def write_raw_bids_beh(raw_fname, bids_path,
     # save readme file unless it already exists
     # XXX: can include README overwrite in future if using a template API
     # XXX: see https://github.com/mne-tools/mne-bids/issues/551
-    _readme(bids_path.datatype, readme_fname, False, verbose)
+    _readme(bids_path.datatype, readme_fname, False)
 
     # save all participants meta data
     _participants_tsv(raw_fname, bids_path.subject, participants_tsv_fname,
-                      overwrite, verbose)
-    _participants_json(participants_json_fname, True, verbose)
+                      overwrite)
+    _participants_json(participants_json_fname, True)
 
 
 
