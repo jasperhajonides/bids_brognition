@@ -23,6 +23,9 @@ And every file name also follows a predefined sequence.
 
 You do not have to worry too much about these as this will all be done for you automatically. It is good to know something about the logic of this structure!!
 
+## video walkthrough
+https://youtu.be/ryGG63qHne0
+
 ## Installation of file formatting packages
 
 ### tl;dr
